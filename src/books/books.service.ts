@@ -7,18 +7,20 @@ import { Book } from './entity/book.entity';
 export class BooksService {
     
     private books: Book[] = [];
-    private nextId: 1;
+    private nextId = 1;
 
     findAll(): Book[] {
         return this.books;
     }
 
     findOne(id: number): Book {
-        const book = this.books.find(b => b.id === id);
-        if (!book) throw new NotFoundException(`Livro #${id} não encontrado`);
-        return book;
 
-    } 
+        const book = this.books.find(b => b.id === id);
+        if (!book) {
+            throw new NotFoundException(`Livro #${id} não encontrado`);
+        }
+        return book;
+    }
 
     create(dto: CreateBookDto): Book {
         const book: Book = {id: this.nextId++, ...dto}
