@@ -2,43 +2,46 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entity/book.entity';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class BooksService {
     
-    private books: Book[] = [];
-    private nextId = 1;
+    constructor(private prisma: PrismaService) {}
 
-    findAll(): Book[] {
-        return this.books;
+    async findAll(): Promise<Book[]> {
+        return this.prisma.books.findMany();
     }
 
-    findOne(id: number): Book {
+    async findOne(id: number): Promise<Book> {
 
-        const book = this.books.find(b => b.id === id);
+        const book = await this.prisma.books.findUnique({ where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
         }
         return book;
     }
 
-    create(dto: CreateBookDto): Book {
-        const book: Book = {id: this.nextId++, ...dto}
-        this.books.push(book);
-        return book;
+    async create(data: CreateBookDto): Promise<Book> {
+        return this.prisma.book.create({ data });
     }
 
-    update(id: number, dto: UpdateBookDto): Book {
-        const book = this.findOne(id);
-        Object.assign(book, dto);
-        return book;
+    async update(id: number, data: UpdateBookDto): Promise<Book> {
+        const book = await this.prisma.book.findUnique({where: {id}});
+        if (!book) {
+            throw new NotFoundException(`Livro #${id} não encontrado`);
+        }
+        return await this.prisma.book.update({ where: {id}, data})
+        
 
     }
 
-    remove(id: number): void {
-        const index = this.books.findIndex(b => b.id === id);
-        if (index === -1) throw new NotFoundException(`Livro #${id} não encontrado`);
-        this.books.splice(index, 1);
+    async remove(id: number): Promise<void> {
+        const index = await this.prisma.books.findIndex({ where: {id} });
+        if (index === -1)
+            throw new NotFoundException(`Livro #${id} não encontrado`);
+
+        await this.prisma.books.remove({ where: {id} });
     }
 
 }
