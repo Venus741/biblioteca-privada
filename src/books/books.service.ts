@@ -10,12 +10,12 @@ export class BooksService {
     constructor(private prisma: PrismaService) {}
 
     async findAll(): Promise<Book[]> {
-        return this.prisma.books.findMany();
+        return this.prisma.book.findMany();
     }
-
+    
     async findOne(id: number): Promise<Book> {
 
-        const book = await this.prisma.books.findUnique({ where: {id}});
+        const book = await this.prisma.book.findUnique({ where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
         }
@@ -32,16 +32,14 @@ export class BooksService {
             throw new NotFoundException(`Livro #${id} não encontrado`);
         }
         return await this.prisma.book.update({ where: {id}, data})
-        
-
     }
 
     async remove(id: number): Promise<void> {
-        const index = await this.prisma.books.findIndex({ where: {id} });
-        if (index === -1)
+        const book = await this.prisma.book.findUnique({ where: {id} });
+        if (!book)
             throw new NotFoundException(`Livro #${id} não encontrado`);
 
-        await this.prisma.books.remove({ where: {id} });
+        await this.prisma.book.delete({ where: {id} });
     }
 
 }
