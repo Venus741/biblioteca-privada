@@ -2,7 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { Book } from 'generated/prisma/client';
+import { PrismaClient, Book } from '@prisma/client';
+
 
 @Controller('books')
 export class BooksController {
@@ -32,5 +33,4 @@ export class BooksController {
     remove(@Param('id') id: string): Promise<void>{
         return this.booksService.remove(+id);
     }
-
 }
