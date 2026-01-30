@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @Controller('books')
@@ -20,8 +21,11 @@ export class BooksController {
     }
 
     @Post()
-    create(@Body() createBookDto: CreateBookDto): Promise<Book> {
-        return this.booksService.create(createBookDto);
+    @UseInterceptors(FileInterceptor('bookCover'))
+    create(
+        @Body() createBookDto: CreateBookDto,
+        @UploadedFile() bookCover: Express.Multer.File): Promise<Book> {
+            return this.booksService.create(createBookDto, bookCover);
     }
 
     @Patch(':id')

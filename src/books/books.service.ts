@@ -22,7 +22,7 @@ export class BooksService {
         return book;
     }
 
-    async create(data: CreateBookDto): Promise<Book> {
+    async create(data: CreateBookDto, bookCover: Express.Multer.File): Promise<Book> {
         return this.prisma.book.create({ data });
     }
 

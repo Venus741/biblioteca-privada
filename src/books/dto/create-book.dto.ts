@@ -1,7 +1,6 @@
-import { IsBoolean, IsInt, IsString } from "class-validator";
+import { IsBoolean, IsInt, IsOptional, IsString } from "class-validator";
 
 export class CreateBookDto {
-
     @IsString()
     title: string;
 
@@ -16,4 +15,8 @@ export class CreateBookDto {
 
     @IsBoolean()
     isInTheLibrary: boolean;
+
+    @IsString()
+    @IsOptional()
+    bookCover?: string;
 }
