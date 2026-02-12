@@ -4,6 +4,8 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import path from 'path';
 
 
 @Controller('books')
@@ -21,7 +23,16 @@ export class BooksController {
     }
 
     @Post()
-    @UseInterceptors(FileInterceptor('bookCover'))
+    @UseInterceptors(FileInterceptor('bookCover', {
+        storage: diskStorage({
+            destination: './uploads/books',
+            filename: (req, file, callback) => {
+                const ext = path.extname(file.originalname);
+                const newName = `${uuid()}${ext}`;
+                callback(null, newName)
+            }
+         })
+    }))
     create(
         @Body() createBookDto: CreateBookDto,
         @UploadedFile() bookCover: Express.Multer.File): Promise<Book> {
@@ -38,3 +49,7 @@ export class BooksController {
         return this.booksService.remove(+id);
     }
 }
+function uuid() {
+    throw new Error('Function not implemented.');
+}
+

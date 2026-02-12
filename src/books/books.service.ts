@@ -19,21 +19,13 @@ export class BooksService {
         const book = await this.prisma.book.findUnique({ where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
-        } else{
-            
         }
 
         return book;
     }
 
     async create(data: CreateBookDto, bookCover: Express.Multer.File): Promise<Book> {
-        if(!bookCover) {
-            data.bookCover = null
-        }
-
-        //const extImageName = extname(data.bookCover)
-        //const cleanExt = extImageName.startsWith('.') ? extImageName.slice(1).toLowerCase() : extImageName;
-
+        data.bookCover? data.bookCover = bookCover.filename : null;
         return this.prisma.book.create({ data });
     }
 
