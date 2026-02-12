@@ -7,4 +7,5 @@ export class Book {
     year: number;
     wasRead: boolean;
     isInTheLibrary: boolean;
+    bookCover: string | null;
 }

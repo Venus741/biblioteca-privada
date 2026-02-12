@@ -18,5 +18,5 @@ export class CreateBookDto {
 
     @IsString()
     @IsOptional()
-    bookCover?: string;
+    bookCover?: string | null;
 }

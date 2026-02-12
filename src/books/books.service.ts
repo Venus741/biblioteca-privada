@@ -3,6 +3,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entity/book.entity';
 import { PrismaService } from 'src/prisma.service';
+import extname from 'path';
 
 @Injectable()
 export class BooksService {
@@ -18,11 +19,21 @@ export class BooksService {
         const book = await this.prisma.book.findUnique({ where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
+        } else{
+            
         }
+
         return book;
     }
 
     async create(data: CreateBookDto, bookCover: Express.Multer.File): Promise<Book> {
+        if(!bookCover) {
+            data.bookCover = null
+        }
+
+        //const extImageName = extname(data.bookCover)
+        //const cleanExt = extImageName.startsWith('.') ? extImageName.slice(1).toLowerCase() : extImageName;
+
         return this.prisma.book.create({ data });
     }
 
@@ -41,5 +52,4 @@ export class BooksService {
 
         await this.prisma.book.delete({ where: {id} });
     }
-
 }
