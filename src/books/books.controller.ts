@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import path from 'path';
-
+import { v4 as uuid } from 'uuid';
+import { BadRequestException } from '@nestjs/common';
+import * as path from 'path';
 
 @Controller('books')
 export class BooksController {
@@ -18,8 +19,8 @@ export class BooksController {
     }
     
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<Book>{
-        return this.booksService.findOne(+id);
+    findOne(@Param('id', ParseIntPipe) id: number): Promise<Book>{
+        return this.booksService.findOne(id);
     }
 
     @Post()
@@ -27,11 +28,33 @@ export class BooksController {
         storage: diskStorage({
             destination: './uploads/books',
             filename: (req, file, callback) => {
-                const ext = path.extname(file.originalname);
-                const newName = `${uuid()}${ext}`;
-                callback(null, newName)
+            const ext = path.extname(file.originalname);
+            const newName = `${uuid()}${ext}`;
+            callback(null, newName);
             }
-         })
+        }),
+        fileFilter: (req, file, callback) => {
+            const allowedMimeTypes = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/webp'
+            ];
+
+            if (allowedMimeTypes.includes(file.mimetype)) {
+                callback(null, true);
+            } else {
+                callback(
+                    new BadRequestException(
+                        'Tipo de arquivo inválido. Apenas JPG, PNG ou WEBP são permitidos.'
+                    ),
+                       false
+                );
+            }
+        },
+        limits: {
+            fileSize: 2 * 1024 * 1024 // 2MB
+        }
     }))
     create(
         @Body() createBookDto: CreateBookDto,
@@ -40,16 +63,17 @@ export class BooksController {
     }
 
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto): Promise<Book> {
-        return this.booksService.update(+id, updateBookDto);
-    }
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateBookDto: UpdateBookDto
+    ): Promise<Book> {
+        return this.booksService.update(id, updateBookDto);
+        }
 
     @Delete(':id')
-    remove(@Param('id') id: string): Promise<void>{
-        return this.booksService.remove(+id);
-    }
+    remove(
+        @Param('id', ParseIntPipe) id: number
+    ): Promise<void> {
+        return this.booksService.remove(id);
+        }
 }
-function uuid() {
-    throw new Error('Function not implemented.');
-}
-
