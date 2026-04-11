@@ -22,16 +22,20 @@ export class BooksService {
         return book;
     }
 
-    async create(data: CreateBookDto): Promise<Book> {
+    async create(data: CreateBookDto, bookCover: Express.Multer.File): Promise<Book> {
+        bookCover? data.bookCover = bookCover.filename : null;
         return this.prisma.book.create({ data });
     }
 
-    async update(id: number, data: UpdateBookDto): Promise<Book> {
+    async update(id: number, data: UpdateBookDto, bookCover: Express.Multer.File): Promise<Book> {
         const book = await this.prisma.book.findUnique({where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
         }
-        return await this.prisma.book.update({ where: {id}, data})
+        if(bookCover){
+             data.bookCover = bookCover.filename;
+        }
+        return await this.prisma.book.update({ where: {id}, data});
     }
 
     async remove(id: number): Promise<void> {
@@ -41,5 +45,4 @@ export class BooksService {
 
         await this.prisma.book.delete({ where: {id} });
     }
-
 }
