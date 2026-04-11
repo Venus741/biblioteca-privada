@@ -27,10 +27,13 @@ export class BooksService {
         return this.prisma.book.create({ data });
     }
 
-    async update(id: number, data: UpdateBookDto): Promise<Book> {
+    async update(id: number, data: UpdateBookDto, bookCover: Express.Multer.File): Promise<Book> {
         const book = await this.prisma.book.findUnique({where: {id}});
         if (!book) {
             throw new NotFoundException(`Livro #${id} não encontrado`);
+        }
+        if(bookCover){
+             data.bookCover = bookCover.filename;
         }
         return await this.prisma.book.update({ where: {id}, data});
     }

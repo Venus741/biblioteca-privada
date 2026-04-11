@@ -63,11 +63,44 @@ export class BooksController {
     }
 
     @Patch(':id')
+    @UseInterceptors(FileInterceptor('bookCover', {
+        storage: diskStorage({
+            destination: './uploads/books',
+            filename: (req, file, callback) => {
+            const ext = path.extname(file.originalname);
+            const newName = `${uuid()}${ext}`;
+            callback(null, newName);
+            }
+        }),
+        fileFilter: (req, file, callback) => {
+            const allowedMimeTypes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/webp'
+            ];
+
+            if (allowedMimeTypes.includes(file.mimetype)) {
+                callback(null, true);
+            } else {
+                callback(
+                    new BadRequestException(
+                        'Tipo de arquivo inválido. Apenas JPG, PNG ou WEBP são permitidos.'
+                    ),
+                    false
+                );
+            }
+        },
+        limits: {
+            fileSize: 2 * 1024 * 1024
+        }
+    }))
     update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() updateBookDto: UpdateBookDto
+        @Body() updateBookDto: UpdateBookDto,
+        @UploadedFile() bookCover: Express.Multer.File,
     ): Promise<Book> {
-        return this.booksService.update(id, updateBookDto);
+        return this.booksService.update(id, updateBookDto, bookCover);
         }
 
     @Delete(':id')
@@ -75,5 +108,5 @@ export class BooksController {
         @Param('id', ParseIntPipe) id: number
     ): Promise<void> {
         return this.booksService.remove(id);
-        }
+    }
 }
